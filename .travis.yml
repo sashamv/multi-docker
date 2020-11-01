@@ -1,0 +1,22 @@
+sudo: required
+services:
+    - docker
+
+before_install:
+    - docker build -t  sashamv/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+    - docker run sashamv/react-test npm test -- --coverage
+
+after_success:
+    - docker build -t sashamv/multi-client ./client
+    - docker build -t sashamv/multi-nginx ./nginx
+    - docker build -t sashamv/multi-server ./server
+    - docker build -t sashamv/multi-worker ./worker
+
+    - echo "docker_password" | docker login -u "docker_id" --password-stdin
+
+    - docker push sashamv/multi-client
+    - docker push sashamv/multi-nginx
+    - docker push sashamv/multi-server
+    - docker push sashamv/multi-worker
